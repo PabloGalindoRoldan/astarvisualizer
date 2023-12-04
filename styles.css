@@ -1,0 +1,57 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Title */
+.titleContainer{
+    width: 100%;
+    height: 10vh;
+    background-color: #4F5366;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.titleLeft, .titleRight{
+    width:50%;
+    padding: 5%;
+}
+
+/* Tools */
+
+.toolContainer{
+    width: 100%;
+    height: 10vh;
+    background-color: #4D5996;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Grid */
+.gridWrapper{
+    padding: 10px;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+}
+
+.gridContainer {
+    display: grid;
+    grid-template-columns: repeat(30, 1fr); /* Adjust columns */
+    grid-template-rows: repeat(20, 1fr);
+    width: 959px;
+    height: 639px;
+}
+
+.gridCell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+}
