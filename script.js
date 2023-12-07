@@ -1,4 +1,4 @@
-/* Grid Builder */
+//1. I start by building a Grid
 const gridContainer = document.getElementById('grid');
 const rows = 20;
 const columns = 30;
@@ -11,36 +11,30 @@ for (let i = 0; i < rows; i++) {
         cell.id = `x${j}y${i}`;
         gridContainer.appendChild(cell);
 
+        //Each grid cell has a node asociated with it
         const node = {
             x: j,
             y: i,
             status: 'empty',
-            gCost: 0,
+            gCost: Infinity,
             hCost: 0,
-            parent: {}
+            parent: null,
         }
         nodes.push(node);
     }
 }
 
-let selectedStatus = ''; // To store the currently selected status
-
-// Function to handle button clicks
-function handleButtonClick(status) {
-    selectedStatus = status;
-}
+//I define variables to track the users input.
 
 let startSet = false; // Track if start node is set
 let endSet = false; // Track if end node is set
 let startNode = null; // Store reference to the start node
 let endNode = null; // Store reference to the end node
+let selectedStatus = ''; // I define this variable to store the currently selected status through the tools buttons
 
-function clearNode(node) {
-    if (node) {
-        node.status = 'empty';
-        const cell = document.getElementById(`x${node.x}y${node.y}`);
-        cell.style.backgroundColor = ''; // Reset cell color
-    }
+// This function changes the selectedStatus variable, according to what you clicked
+function handleButtonClick(status) {
+    selectedStatus = status;
 }
 
 // Function to handle cell clicks
@@ -118,11 +112,42 @@ function resetNodes() {
     endNode = null;
 }
 
+    function resetPath() {
+        const excludeStart = nodes.find(node => node.x === startNode.x && node.y === startNode.y);
+        const excludeEnd = nodes.find(node => node.x === endNode.x && node.y === endNode.y);
+        nodes.forEach(node => {
+            if (node != excludeStart && node != excludeEnd && node.status != 'block') {
+            clearNode(node)
+            }
+        })
+}
+
+function clearNode(node) {
+    if (node) {
+        node.status = 'empty';
+        node.gCost = Infinity;
+        node.hCost = 0;
+        node.fcost = 0;
+        node.parent = null;
+        const cell = document.getElementById(`x${node.x}y${node.y}`);
+        cell.style.backgroundColor = ''; // Reset cell color
+    }
+}
+
 // Attach click event listeners to buttons
 document.getElementById('buttonStart').addEventListener('click', () => handleButtonClick('start'));
 document.getElementById('buttonEnd').addEventListener('click', () => handleButtonClick('end'));
 document.getElementById('buttonBlock').addEventListener('click', () => handleButtonClick('block'));
 document.getElementById('buttonReset').addEventListener('click', resetNodes);
+document.getElementById('buttonVisualizer'). addEventListener('click', () => {
+    resetPath()
+    const path = AStar(startNode, endNode); // Run A* algorithm
+    if (path) {
+        console.log('Path found:', path); // Output path to console
+    } else {
+       alert('No path found'); // Output if no path found
+    }
+});
 
 // Attach click event listener to grid cells
 const gridCells = document.querySelectorAll('.gridCell');
@@ -142,47 +167,137 @@ document.addEventListener('mouseup', () => {
     gridContainer.removeEventListener('mouseover', handleContinuousBlockPaint);
 });
 
-/*  
+/* End the grid builder */
+
 function heuristic(nodeA, nodeB) {
     const dx = Math.abs(nodeA.x - nodeB.x);
     const dy = Math.abs(nodeA.y - nodeB.y);
-    return Math.sqrt(dx * dx + dy * dy); 
+    return dx + dy;
 }
 
-function AStar(startNode, goalNode) {
+function movementCost(currentNode, neighbor){
+    const x = currentNode.x
+    const y = currentNode.y
+    const nx = neighbor.x
+    const ny = neighbor.y
+
+    if (x == nx || y == ny){
+        return 10
+    }
+    else return 14
+}
+
+function reconstructPath(startNode, goalNode) {
+    const path = [];
+    let currentNode = goalNode;
+    
+    while (currentNode !== null) {
+        path.push(currentNode);
+        currentNode = currentNode.parent;
+    }
+    const reversedPath = path.reverse();
+    visualizePath(reversedPath, startNode, goalNode)
+    return reversedPath;
+}
+
+function visualizePath(path, startNode, goalNode) {
+    path.forEach(node => {
+        const cell = document.getElementById(`x${node.x}y${node.y}`);
+        if (cell && node !== startNode && node !== goalNode) {
+            cell.style.backgroundColor = 'cyan'
+        }
+    });
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function AStar(startNode, goalNode) {
+    startNode.gCost = 0;
+    startNode.hCost = heuristic(startNode, goalNode);
+    startNode.fCost = startNode.hCost;
     let openList = [startNode];
     let closedList = [];
-
+    
     while (openList.length > 0) {
-        // Find node with lowest fCost in openList
-        const currentNode =  Find node with lowest fCost ;
-
-        // Move currentNode from openList to closedList
-        // ...
-
-        // If currentNode is the goal, reconstruct path and exit loop
-        if ( currentNode is goal ) {
-            return  Reconstruct path ;
+        let lowestCostNodeIndex = 0;
+        for (let i = 1; i < openList.length; i++) {
+            if (openList[i].fCost < openList[lowestCostNodeIndex].fCost) {
+                lowestCostNodeIndex = i;
+            }
         }
 
-        // Process neighboring nodes
-        for (const neighbor of  currentNode's neighbors ) {
-            if ( neighbor is not walkable or in closedList ) {
+        const currentNode = openList[lowestCostNodeIndex];
+
+        if(currentNode.x === goalNode.x && currentNode.y === goalNode.y) {
+            const path = reconstructPath(startNode, goalNode);
+            return path; // Return the reconstructed path
+        }
+
+        const x = currentNode.x;
+        const y = currentNode.y;
+        const directions = [
+            { dx: -1, dy: -1 }, // top-left
+            { dx: 0, dy: -1 },  // top
+            { dx: 1, dy: -1 },  // top-right
+            { dx: -1, dy: 0 },  // left
+            { dx: 1, dy: 0 },   // right
+            { dx: -1, dy: 1 },  // bottom-left
+            { dx: 0, dy: 1 },   // bottom
+            { dx: 1, dy: 1 }    // bottom-right
+        ];
+
+        for (const dir of directions) {
+            const newX = x + dir.dx;
+            const newY = y + dir.dy;
+            const maxX = columns;
+            const maxY = rows;
+
+            if (newX < 0 || newY < 0 || newX >= maxX || newY >= maxY) {
+                continue;
+            }
+        
+            const neighbor = nodes.find(node => node.x === newX && node.y === newY);
+            
+            if (!neighbor || neighbor.status === 'block' || closedList.includes(neighbor)) {
                 continue;
             }
 
-            const tentativeGCost =  Calculate tentative gCost ;
-
-            if ( neighbor not in openList or tentativeGCost is lower ) {
-                // Update neighbor's gCost, hCost, parent
-                // Add neighbor to openList
+            // Calculate tentative gCost for the neighbor
+            const moveCost = movementCost(currentNode, neighbor)
+            const tentativeGCost = currentNode.gCost + moveCost;
+            const hCost = (heuristic(neighbor, goalNode) * 10);
+            const fCost = tentativeGCost + hCost;
+            
+            if (tentativeGCost < neighbor.gCost || !openList.includes(neighbor)) {
+                neighbor.parent = currentNode; // Set the neighbor's parent to the current node
+                neighbor.gCost = tentativeGCost; // Update the neighbor's gCost
+                neighbor.hCost = hCost; // Update the neighbor's hCost
+                neighbor.fCost = fCost; // Update the neighbor's fCost
+            
+                if (!openList.includes(neighbor)) {
+                    openList.push(neighbor); // Add the neighbor to the open list
+                }
             }
         }
+        /* openList = openList.filter(node => node !== currentNode); */
+        openList.splice(lowestCostNodeIndex, 1);
+        openList.forEach(node => {
+            const cell = document.getElementById(`x${node.x}y${node.y}`);
+            if (cell && node !== startNode && node !== goalNode) {
+                cell.style.backgroundColor = 'blue'; // Change color for open list nodes
+            }
+        });
+        closedList.push(currentNode);
+        closedList.forEach(node => {
+            const cell = document.getElementById(`x${node.x}y${node.y}`);
+            if (cell && node !== startNode && node !== goalNode) {
+                cell.style.backgroundColor = 'gray'; // Change color for closed list nodes
+            }
+        });
+        await delay(10);
     }
-
-    // No path found
-    return null;
+    alert("No path found")
+    return null; // No path found
 }
-
-*/
-/* End the grid builder */
