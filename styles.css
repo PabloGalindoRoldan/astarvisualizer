@@ -11,7 +11,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Rubik Bubbles";
+    font-family: "Electrolize";
     color: #fff;
 }
 
@@ -87,8 +87,10 @@ button{
 }
 
 #buttonVisualizer{
-    border: 5px solid #eeaf61;
-    color: #eeaf61;
+    background-color: #eeaf61;
+    border: 3px solid white;
+    color: white;
+    font-weight: bolder;
 }
 
 button:hover{
