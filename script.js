@@ -1,4 +1,4 @@
-//1. I start by building a Grid
+//I start by building a Grid
 const gridContainer = document.getElementById('grid');
 const rows = 20;
 const columns = 30;
@@ -32,7 +32,7 @@ let startNode = null; // Store reference to the start node
 let endNode = null; // Store reference to the end node
 let selectedStatus = ''; // I define this variable to store the currently selected status through the tools buttons
 
-// This function changes the selectedStatus variable, according to what you clicked
+// This function changes the selectedStatus variable, according to what user clicked
 function handleButtonClick(status) {
     selectedStatus = status;
 }
@@ -54,7 +54,7 @@ function handleCellClick(event) {
             startNode = cell;
             startSet = true;
             cell.status = 'start';
-            event.target.style.backgroundColor = 'green';
+            event.target.style.backgroundColor = '#eeaf61'; //This will change the backgcolor of the start cell and will handle the case for when you change it
         } else if (selectedStatus === 'end') {
             if (endSet) {
                 clearNode(endNode);
@@ -62,7 +62,7 @@ function handleCellClick(event) {
             endNode = cell;
             endSet = true;
             cell.status = 'end';
-            event.target.style.backgroundColor = 'red';
+            event.target.style.backgroundColor = '#89084b'; //This will change the backgcolor of the end cell and will handle the case for when you change it
             
         } else if (selectedStatus === 'block') {
             if (cell.status === 'block') {
@@ -70,7 +70,7 @@ function handleCellClick(event) {
                 event.target.style.backgroundColor = ''; // Reset cell color
             } else if (cell.status !== 'start' && cell.status !== 'end') {
                 cell.status = 'block'; // Set as block if not start/end
-                event.target.style.backgroundColor = 'black';
+                event.target.style.backgroundColor = '#6a0d83';
             }
         }
     }
@@ -94,43 +94,9 @@ function handleContinuousBlockPaint(event) {
                 event.target.style.backgroundColor = ''; // Reset cell color
             } else if (cell.status !== 'start' && cell.status !== 'end') {
                 cell.status = 'block'; // Set as block if not start/end
-                event.target.style.backgroundColor = 'black';
+                event.target.style.backgroundColor = '#6a0d83';
             }
         }
-    }
-}
-
-function resetNodes() {
-    nodes.forEach(node => {
-        clearNode(node);
-    });
-
-    // Reset start and end nodes flags and references
-    startSet = false;
-    endSet = false;
-    startNode = null;
-    endNode = null;
-}
-
-    function resetPath() {
-        const excludeStart = nodes.find(node => node.x === startNode.x && node.y === startNode.y);
-        const excludeEnd = nodes.find(node => node.x === endNode.x && node.y === endNode.y);
-        nodes.forEach(node => {
-            if (node != excludeStart && node != excludeEnd && node.status != 'block') {
-            clearNode(node)
-            }
-        })
-}
-
-function clearNode(node) {
-    if (node) {
-        node.status = 'empty';
-        node.gCost = Infinity;
-        node.hCost = 0;
-        node.fcost = 0;
-        node.parent = null;
-        const cell = document.getElementById(`x${node.x}y${node.y}`);
-        cell.style.backgroundColor = ''; // Reset cell color
     }
 }
 
@@ -167,14 +133,59 @@ document.addEventListener('mouseup', () => {
     gridContainer.removeEventListener('mouseover', handleContinuousBlockPaint);
 });
 
-/* End the grid builder */
+//Function to reset all nodes
+function resetNodes() {
+    nodes.forEach(node => {
+        clearNode(node);
+    });
 
+    // Reset start and end nodes flags and references
+    startSet = false;
+    endSet = false;
+    startNode = null;
+    endNode = null;
+}
+
+//Function to reset the path
+function resetPath() {
+    if (startNode == null){
+        alert("Select start Node");
+        return null;
+    }
+    if (endNode == null){
+        alert("Select end Node");
+        return null;
+    }
+    const excludeStart = nodes.find(node => node.x === startNode.x && node.y === startNode.y);
+    const excludeEnd = nodes.find(node => node.x === endNode.x && node.y === endNode.y);
+    nodes.forEach(node => {
+        if (node != excludeStart && node != excludeEnd && node.status != 'block') {
+        clearNode(node)
+        }
+    })
+}
+
+//Function that clears nodes individually
+function clearNode(node) {
+    if (node) {
+        node.status = 'empty';
+        node.gCost = Infinity;
+        node.hCost = 0;
+        node.fcost = 0;
+        node.parent = null;
+        const cell = document.getElementById(`x${node.x}y${node.y}`);
+        cell.style.backgroundColor = ''; // Reset cell color
+    }
+}
+
+//Function to calculate the heuristic cost (hCost) of nodes
 function heuristic(nodeA, nodeB) {
     const dx = Math.abs(nodeA.x - nodeB.x);
     const dy = Math.abs(nodeA.y - nodeB.y);
     return dx + dy;
 }
 
+//Function to calculate the movement cost (gCost) of nodes
 function movementCost(currentNode, neighbor){
     const x = currentNode.x
     const y = currentNode.y
@@ -187,6 +198,7 @@ function movementCost(currentNode, neighbor){
     else return 14
 }
 
+//Function that will define the path result of astar function
 function reconstructPath(startNode, goalNode) {
     const path = [];
     let currentNode = goalNode;
@@ -200,20 +212,29 @@ function reconstructPath(startNode, goalNode) {
     return reversedPath;
 }
 
+//Function that will visualize the resulting path of the astar function
 function visualizePath(path, startNode, goalNode) {
     path.forEach(node => {
         const cell = document.getElementById(`x${node.x}y${node.y}`);
         if (cell && node !== startNode && node !== goalNode) {
-            cell.style.backgroundColor = 'cyan'
+            cell.style.backgroundColor = '#D8ED61' //Set cell color
         }
     });
 }
 
+//Function that will handle a small delay in the astar function loop for visualization purposes
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+//Astar function that will calculate the shortest path from start to goal
 async function AStar(startNode, goalNode) {
+    if (startNode == null){
+        return null;
+    }
+    if (endNode == null){
+        return null;
+    }
     startNode.gCost = 0;
     startNode.hCost = heuristic(startNode, goalNode);
     startNode.fCost = startNode.hCost;
@@ -232,7 +253,7 @@ async function AStar(startNode, goalNode) {
 
         if(currentNode.x === goalNode.x && currentNode.y === goalNode.y) {
             const path = reconstructPath(startNode, goalNode);
-            return path; // Return the reconstructed path
+            return path; 
         }
 
         const x = currentNode.x;
@@ -264,7 +285,7 @@ async function AStar(startNode, goalNode) {
                 continue;
             }
 
-            // Calculate tentative gCost for the neighbor
+            // Calculate fCost for the neighbor
             const moveCost = movementCost(currentNode, neighbor)
             const tentativeGCost = currentNode.gCost + moveCost;
             const hCost = (heuristic(neighbor, goalNode) * 10);
@@ -281,23 +302,27 @@ async function AStar(startNode, goalNode) {
                 }
             }
         }
-        /* openList = openList.filter(node => node !== currentNode); */
+        //Will exclude the lowestCostNode from open list for the algorithm to work properly
         openList.splice(lowestCostNodeIndex, 1);
+        //Visualize the open list nodes
         openList.forEach(node => {
             const cell = document.getElementById(`x${node.x}y${node.y}`);
             if (cell && node !== startNode && node !== goalNode) {
-                cell.style.backgroundColor = 'blue'; // Change color for open list nodes
+                cell.style.backgroundColor = '#fb9062'; // Change color for open list nodes
             }
         });
+        //Will add the currentNode into the closed list
         closedList.push(currentNode);
+        //Visualize closed list nodes
         closedList.forEach(node => {
             const cell = document.getElementById(`x${node.x}y${node.y}`);
             if (cell && node !== startNode && node !== goalNode) {
-                cell.style.backgroundColor = 'gray'; // Change color for closed list nodes
+                cell.style.backgroundColor = '#ffe5ad'; // Change color for closed list nodes
             }
         });
         await delay(10);
     }
+    //Alert if no path found
     alert("No path found")
     return null; // No path found
 }
