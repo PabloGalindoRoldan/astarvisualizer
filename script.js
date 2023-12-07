@@ -1,3 +1,4 @@
+
 //I start by building a Grid
 const gridContainer = document.getElementById('grid');
 const rows = 20;

@@ -80,7 +80,7 @@ button{
     height: 80%;
     width: 50%;
     background-color: transparent;
-    border: 3px solid white;
+    border: none;
     border-radius: 10px;
     font-size: large;
     transition: 0.2s;
@@ -99,7 +99,7 @@ button:hover{
 }
 
 button:active{
-    background-color: #a93b78;
+    color: #a93b78;
 }
 
 #buttonVisualizer:active{
