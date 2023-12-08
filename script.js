@@ -64,7 +64,7 @@ function handleCellClick(event) {
             endSet = true;
             cell.status = 'end';
             event.target.style.backgroundColor = '#89084b'; //This will change the backgcolor of the end cell and will handle the case for when you change it
-            
+
         } else if (selectedStatus === 'block') {
             if (cell.status === 'block') {
                 cell.status = 'empty'; // Toggle from block to empty
@@ -106,13 +106,13 @@ document.getElementById('buttonStart').addEventListener('click', () => handleBut
 document.getElementById('buttonEnd').addEventListener('click', () => handleButtonClick('end'));
 document.getElementById('buttonBlock').addEventListener('click', () => handleButtonClick('block'));
 document.getElementById('buttonReset').addEventListener('click', resetNodes);
-document.getElementById('buttonVisualizer'). addEventListener('click', () => {
+document.getElementById('buttonVisualizer').addEventListener('click', () => {
     resetPath()
     const path = AStar(startNode, endNode); // Run A* algorithm
     if (path) {
         console.log('Path found:', path); // Output path to console
     } else {
-       alert('No path found'); // Output if no path found
+        alert('No path found'); // Output if no path found
     }
 });
 
@@ -149,11 +149,11 @@ function resetNodes() {
 
 //Function to reset the path
 function resetPath() {
-    if (startNode == null){
+    if (startNode == null) {
         alert("Select start Node");
         return null;
     }
-    if (endNode == null){
+    if (endNode == null) {
         alert("Select end Node");
         return null;
     }
@@ -161,7 +161,7 @@ function resetPath() {
     const excludeEnd = nodes.find(node => node.x === endNode.x && node.y === endNode.y);
     nodes.forEach(node => {
         if (node != excludeStart && node != excludeEnd && node.status != 'block') {
-        clearNode(node)
+            clearNode(node)
         }
     })
 }
@@ -187,13 +187,13 @@ function heuristic(nodeA, nodeB) {
 }
 
 //Function to calculate the movement cost (gCost) of nodes
-function movementCost(currentNode, neighbor){
+function movementCost(currentNode, neighbor) {
     const x = currentNode.x
     const y = currentNode.y
     const nx = neighbor.x
     const ny = neighbor.y
 
-    if (x == nx || y == ny){
+    if (x == nx || y == ny) {
         return 10
     }
     else return 14
@@ -203,7 +203,7 @@ function movementCost(currentNode, neighbor){
 function reconstructPath(startNode, goalNode) {
     const path = [];
     let currentNode = goalNode;
-    
+
     while (currentNode !== null) {
         path.push(currentNode);
         currentNode = currentNode.parent;
@@ -230,10 +230,10 @@ function delay(ms) {
 
 //Astar function that will calculate the shortest path from start to goal
 async function AStar(startNode, goalNode) {
-    if (startNode == null){
+    if (startNode == null) {
         return null;
     }
-    if (endNode == null){
+    if (endNode == null) {
         return null;
     }
     startNode.gCost = 0;
@@ -241,7 +241,7 @@ async function AStar(startNode, goalNode) {
     startNode.fCost = startNode.hCost;
     let openList = [startNode];
     let closedList = [];
-    
+
     while (openList.length > 0) {
         let lowestCostNodeIndex = 0;
         for (let i = 1; i < openList.length; i++) {
@@ -252,9 +252,9 @@ async function AStar(startNode, goalNode) {
 
         const currentNode = openList[lowestCostNodeIndex];
 
-        if(currentNode.x === goalNode.x && currentNode.y === goalNode.y) {
+        if (currentNode.x === goalNode.x && currentNode.y === goalNode.y) {
             const path = reconstructPath(startNode, goalNode);
-            return path; 
+            return path;
         }
 
         const x = currentNode.x;
@@ -279,9 +279,9 @@ async function AStar(startNode, goalNode) {
             if (newX < 0 || newY < 0 || newX >= maxX || newY >= maxY) {
                 continue;
             }
-        
+
             const neighbor = nodes.find(node => node.x === newX && node.y === newY);
-            
+
             if (!neighbor || neighbor.status === 'block' || closedList.includes(neighbor)) {
                 continue;
             }
@@ -291,13 +291,13 @@ async function AStar(startNode, goalNode) {
             const tentativeGCost = currentNode.gCost + moveCost;
             const hCost = (heuristic(neighbor, goalNode) * 10);
             const fCost = tentativeGCost + hCost;
-            
+
             if (tentativeGCost < neighbor.gCost || !openList.includes(neighbor)) {
                 neighbor.parent = currentNode; // Set the neighbor's parent to the current node
                 neighbor.gCost = tentativeGCost; // Update the neighbor's gCost
                 neighbor.hCost = hCost; // Update the neighbor's hCost
                 neighbor.fCost = fCost; // Update the neighbor's fCost
-            
+
                 if (!openList.includes(neighbor)) {
                     openList.push(neighbor); // Add the neighbor to the open list
                 }
